@@ -1,0 +1,121 @@
+<main class="app-shell">
+  <section class="summary-band">
+    <div>
+      <p class="eyebrow">Heute</p>
+      <h1>Kalorien Tracker</h1>
+    </div>
+
+    <label class="goal-input">
+      Tagesziel
+      <input type="number" min="1" step="50" [ngModel]="dailyGoal()" (ngModelChange)="dailyGoal.set($event)" />
+      <span>kcal</span>
+    </label>
+  </section>
+
+  <section class="metrics-grid" aria-label="Tagesuebersicht">
+    <article>
+      <span>Gegessen</span>
+      <strong>{{ totalCalories() }}</strong>
+      <small>kcal</small>
+    </article>
+    <article>
+      <span>Uebrig</span>
+      <strong [class.over-goal]="remainingCalories() < 0">{{ remainingCalories() }}</strong>
+      <small>kcal</small>
+    </article>
+    <article>
+      <span>Ziel erreicht</span>
+      <strong>{{ progressPercent() }}</strong>
+      <small>%</small>
+    </article>
+  </section>
+
+  <div class="progress-track" aria-hidden="true">
+    <div [style.width.%]="progressPercent()"></div>
+  </div>
+
+  <section class="content-grid">
+    <form class="entry-form" (ngSubmit)="addEntry()">
+      <h2>Lebensmittel eintragen</h2>
+
+      <label>
+        Name
+        <input
+          name="foodName"
+          type="text"
+          placeholder="z. B. Reis, Apfel, Joghurt"
+          [ngModel]="foodName()"
+          (ngModelChange)="foodName.set($event)"
+          required
+        />
+      </label>
+
+      <div class="field-row">
+        <label>
+          Mahlzeit
+          <select name="meal" [ngModel]="selectedMeal()" (ngModelChange)="selectedMeal.set($event)">
+            @for (meal of meals; track meal) {
+              <option [value]="meal">{{ meal }}</option>
+            }
+          </select>
+        </label>
+
+        <label>
+          Menge
+          <input name="grams" type="number" min="1" step="1" [ngModel]="grams()" (ngModelChange)="grams.set($event)" />
+          <span>g</span>
+        </label>
+      </div>
+
+      <label>
+        Kalorien pro 100 g
+        <input
+          name="caloriesPer100g"
+          type="number"
+          min="0"
+          step="1"
+          [ngModel]="caloriesPer100g()"
+          (ngModelChange)="caloriesPer100g.set($event)"
+        />
+      </label>
+
+      <button type="submit">Eintrag hinzufuegen</button>
+    </form>
+
+    <section class="entries-panel">
+      <div class="entries-header">
+        <h2>Dein Tag</h2>
+        <button type="button" class="secondary-button" (click)="clearDay()" [disabled]="entries().length === 0">
+          Tag leeren
+        </button>
+      </div>
+
+      @if (entries().length === 0) {
+        <p class="empty-state">Noch keine Lebensmittel erfasst.</p>
+      } @else {
+        <div class="meal-groups">
+          @for (group of groupedEntries(); track group.meal) {
+            @if (group.entries.length > 0) {
+              <section class="meal-group">
+                <h3>{{ group.meal }}</h3>
+
+                @for (entry of group.entries; track entry.id) {
+                  <article class="entry-card">
+                    <div>
+                      <strong>{{ entry.name }}</strong>
+                      <span>{{ entry.grams }} g - {{ entry.caloriesPer100g }} kcal / 100 g</span>
+                    </div>
+                    <div class="entry-actions">
+                      <b>{{ entryCalories(entry) | number: '1.0-0' }} kcal</b>
+                      <button type="button" aria-label="Eintrag loeschen" (click)="deleteEntry(entry.id)">x</button>
+                    </div>
+                  </article>
+                }
+              </section>
+            }
+          }
+        </div>
+      }
+    </section>
+  </section>
+</main>
